@@ -10,9 +10,16 @@ export type DadosCliente = {
   created_at: string;
   nome: string;
   telefone: string;
-  email?: string;
-  fonte_conversa: string;
   status: string;
+
+  // Seu banco pode usar "fonte" (como você mencionou) ou o nome antigo "fonte_conversa"
+  fonte?: string;
+  fonte_conversa?: string;
+
+  email?: string;
   cidade?: string;
   estado?: string;
+
+  // Permite colunas extras sem quebrar o TypeScript
+  [key: string]: any;
 };

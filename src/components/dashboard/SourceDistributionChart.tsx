@@ -65,7 +65,7 @@ export function SourceDistributionChart({ data, isLoading }: SourceDistributionC
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={(props) => <CustomTooltip {...props} />} />
             <Legend
               layout="vertical"
               align="right"

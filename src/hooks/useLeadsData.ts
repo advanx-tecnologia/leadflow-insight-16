@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase, DadosCliente } from "@/integrations/supabase/client";
-import { Lead, mockLeads } from "@/lib/mockData";
+import { toast } from "@/hooks/use-toast";
+import { Lead } from "@/lib/mockData";
 import {
   PeriodType,
   DateRange,
@@ -72,15 +73,18 @@ export interface UseLeadsDataReturn {
 // Converter DadosCliente para Lead
 function convertToLead(data: DadosCliente): Lead {
   return {
-    id: data.id.toString(),
-    nome: data.nome,
-    telefone: data.telefone,
-    email: data.email || "",
-    fonte_conversa: data.fonte_conversa,
-    status: data.status as Lead["status"],
-    cidade: data.cidade || "",
-    estado: data.estado || "",
-    created_at: data.created_at,
+    id: String(data.id),
+    nome: String(data.nome ?? ""),
+    telefone: String(data.telefone ?? ""),
+    email: data.email ? String(data.email) : "",
+
+    // Fonte vem da coluna "fonte" (preferencial) ou "fonte_conversa" (fallback)
+    fonte_conversa: String((data.fonte ?? data.fonte_conversa ?? "")),
+
+    status: String(data.status ?? ""),
+    cidade: data.cidade ? String(data.cidade) : "",
+    estado: data.estado ? String(data.estado) : "",
+    created_at: String(data.created_at),
   };
 }
 
@@ -103,18 +107,41 @@ export function useLeadsData(): UseLeadsDataReturn {
 
       if (error) {
         console.error("Erro ao buscar dados:", error);
-        // Fallback para mock data
-        setLeads(mockLeads);
-      } else if (data && data.length > 0) {
-        setLeads(data.map(convertToLead));
-      } else {
-        // Tabela vazia, usar mock data
-        console.log("Tabela vazia, usando dados de demonstração");
-        setLeads(mockLeads);
+        setLeads([]);
+        toast({
+          title: "Falha ao carregar leads",
+          description: "Não foi possível ler dados_cliente. Verifique permissões (RLS) e nome das colunas.",
+          variant: "destructive",
+        });
+        return;
       }
+
+      // IMPORTANTE: não usamos mais dados mock como fallback,
+      // para garantir que os números sempre reflitam o banco.
+      if (!data) {
+        setLeads([]);
+        return;
+      }
+
+      if (data.length === 0) {
+        setLeads([]);
+        toast({
+          title: "Nenhum lead retornado",
+          description:
+            "A consulta retornou 0 linhas. Se sua tabela tem ~130 linhas, isso normalmente é permissão/visibilidade (RLS) bloqueando o anon key.",
+        });
+        return;
+      }
+
+      setLeads(data.map(convertToLead));
     } catch (err) {
       console.error("Erro de conexão:", err);
-      setLeads(mockLeads);
+      setLeads([]);
+      toast({
+        title: "Erro de conexão",
+        description: "Não foi possível conectar ao banco para buscar os leads.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
