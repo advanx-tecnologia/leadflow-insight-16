@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { supabase, DadosCliente } from "@/integrations/supabase/client";
 import { Lead, mockLeads } from "@/lib/mockData";
 import {
   PeriodType,
@@ -68,14 +69,67 @@ export interface UseLeadsDataReturn {
   refetch: () => void;
 }
 
+// Converter DadosCliente para Lead
+function convertToLead(data: DadosCliente): Lead {
+  return {
+    id: data.id.toString(),
+    nome: data.nome,
+    telefone: data.telefone,
+    email: data.email || "",
+    fonte_conversa: data.fonte_conversa,
+    status: data.status as Lead["status"],
+    cidade: data.cidade || "",
+    estado: data.estado || "",
+    created_at: data.created_at,
+  };
+}
+
 export function useLeadsData(): UseLeadsDataReturn {
-  const [leads] = useState<Lead[]>(mockLeads);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [period, setPeriod] = useState<PeriodType>("last30days");
   const [customRange, setCustomRange] = useState<DateRange | undefined>();
-  const [isLoading, setIsLoading] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   const periodInfo = useMemo(() => getPeriodDates(period, customRange), [period, customRange]);
+
+  // Fetch data from Supabase
+  const fetchLeads = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("dados_cliente")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Erro ao buscar dados:", error);
+        // Fallback para mock data
+        setLeads(mockLeads);
+      } else if (data && data.length > 0) {
+        setLeads(data.map(convertToLead));
+      } else {
+        // Tabela vazia, usar mock data
+        console.log("Tabela vazia, usando dados de demonstração");
+        setLeads(mockLeads);
+      }
+    } catch (err) {
+      console.error("Erro de conexão:", err);
+      setLeads(mockLeads);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchLeads();
+  }, [fetchLeads]);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(fetchLeads, 30000);
+    return () => clearInterval(interval);
+  }, [fetchLeads]);
 
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => isDateInRange(lead.created_at, periodInfo.current));
@@ -226,20 +280,6 @@ export function useLeadsData(): UseLeadsDataReturn {
       .sort((a, b) => b.count - a.count);
   }, [filteredLeads]);
 
-  const refetch = useCallback(() => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setRefreshKey((k) => k + 1);
-      setIsLoading(false);
-    }, 500);
-  }, []);
-
-  // Auto-refresh every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(refetch, 30000);
-    return () => clearInterval(interval);
-  }, [refetch]);
-
   return {
     leads,
     filteredLeads,
@@ -254,6 +294,6 @@ export function useLeadsData(): UseLeadsDataReturn {
     setPeriod,
     setCustomRange,
     isLoading,
-    refetch,
+    refetch: fetchLeads,
   };
 }

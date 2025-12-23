@@ -3,8 +3,11 @@ export interface Lead {
   created_at: string;
   nome: string;
   telefone: string;
+  email?: string;
   fonte_conversa: string;
   status: string;
+  cidade?: string;
+  estado?: string;
 }
 
 export type LeadStatus = "Novo" | "Qualificado" | "Convertido" | "Perdido";
