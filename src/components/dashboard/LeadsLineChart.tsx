@@ -40,13 +40,13 @@ export function LeadsLineChart({ data, isLoading }: LeadsLineChartProps) {
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(217, 33%, 20%)" />
             <XAxis
               dataKey="dateFormatted"
-              stroke="hsl(215, 20%, 65%)"
+              stroke="hsl(215, 20%, 78%)"
               fontSize={12}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
-              stroke="hsl(215, 20%, 65%)"
+              stroke="hsl(215, 20%, 78%)"
               fontSize={12}
               tickLine={false}
               axisLine={false}
@@ -65,7 +65,7 @@ export function LeadsLineChart({ data, isLoading }: LeadsLineChartProps) {
               type="monotone"
               dataKey="previous"
               name="Período Anterior"
-              stroke="hsl(215, 20%, 45%)"
+              stroke="hsl(215, 30%, 55%)"
               strokeWidth={2}
               strokeDasharray="5 5"
               fill="transparent"

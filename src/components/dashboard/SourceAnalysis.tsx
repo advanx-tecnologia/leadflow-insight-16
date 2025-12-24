@@ -34,9 +34,9 @@ export function SourceAnalysis({ data, isLoading }: SourceAnalysisProps) {
         {data.map((source, index) => {
           const barWidth = (source.count / maxCount) * 100;
           return (
-            <div key={source.source} className="space-y-2">
+            <div key={source.source || "(Sem fonte)"} className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">{source.source}</span>
+                <span className="font-medium">{source.source || "(Sem fonte)"}</span>
                 <div className="flex items-center gap-3">
                   <span className="text-muted-foreground">
                     {source.count} ({source.percentage}%)

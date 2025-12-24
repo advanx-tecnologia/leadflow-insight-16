@@ -70,7 +70,7 @@ export function SourceDistributionChart({ data, isLoading }: SourceDistributionC
               layout="vertical"
               align="right"
               verticalAlign="middle"
-              formatter={(value, entry: any) => (
+              formatter={(value: string, entry: any) => (
                 <span className="text-sm text-foreground">
                   {value} ({entry.payload.percentage}%)
                 </span>

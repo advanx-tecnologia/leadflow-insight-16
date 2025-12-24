@@ -43,14 +43,14 @@ export function HourlyColumnChart({ data, isLoading }: HourlyColumnChartProps) {
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(217, 33%, 20%)" vertical={false} />
             <XAxis
               dataKey="label"
-              stroke="hsl(215, 20%, 65%)"
+              stroke="hsl(215, 20%, 78%)"
               fontSize={10}
               tickLine={false}
               axisLine={false}
               interval={2}
             />
             <YAxis
-              stroke="hsl(215, 20%, 65%)"
+              stroke="hsl(215, 20%, 78%)"
               fontSize={12}
               tickLine={false}
               axisLine={false}
