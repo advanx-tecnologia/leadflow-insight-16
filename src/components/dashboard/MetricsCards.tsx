@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Users, CalendarDays, BarChart3, Zap } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, CalendarDays, BarChart3, Zap, FileCheck, Percent } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LeadsMetrics } from "@/hooks/useLeadsData";
 
@@ -15,14 +15,16 @@ interface MetricCardProps {
   icon: React.ReactNode;
   isLoading: boolean;
   delay?: number;
+  variant?: "default" | "success";
 }
 
-function MetricCard({ title, value, subtitle, change, icon, isLoading, delay = 0 }: MetricCardProps) {
+function MetricCard({ title, value, subtitle, change, icon, isLoading, delay = 0, variant = "default" }: MetricCardProps) {
   const isPositive = change !== undefined && change >= 0;
+  const iconBgClass = variant === "success" ? "bg-success/10 text-success" : "bg-primary/10 text-primary";
 
   return (
     <div
-      className="glass-card-hover p-6 animate-slide-up"
+      className="glass-card-hover p-4 sm:p-6 animate-slide-up"
       style={{ animationDelay: `${delay}ms` }}
     >
       {isLoading ? (
@@ -35,13 +37,13 @@ function MetricCard({ title, value, subtitle, change, icon, isLoading, delay = 0
         <>
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-medium text-muted-foreground">{title}</span>
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+            <div className={cn("p-2 rounded-lg", iconBgClass)}>
               {icon}
             </div>
           </div>
           <div className="space-y-1">
-            <h3 className="text-3xl font-bold tracking-tight">{value}</h3>
-            <div className="flex items-center gap-2">
+            <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">{value}</h3>
+            <div className="flex items-center gap-2 flex-wrap">
               {change !== undefined && (
                 <span
                   className={cn(
@@ -71,7 +73,7 @@ function MetricCard({ title, value, subtitle, change, icon, isLoading, delay = 0
 
 export function MetricsCards({ metrics, isLoading }: MetricsCardsProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
       <MetricCard
         title="Total de Leads"
         value={metrics.totalLeads.toLocaleString("pt-BR")}
@@ -103,6 +105,24 @@ export function MetricsCards({ metrics, isLoading }: MetricsCardsProps) {
         icon={<Zap className="h-5 w-5" />}
         isLoading={isLoading}
         delay={150}
+      />
+      <MetricCard
+        title="Contratos Fechados"
+        value={metrics.contratosFechados}
+        subtitle="no período"
+        icon={<FileCheck className="h-5 w-5" />}
+        isLoading={isLoading}
+        delay={200}
+        variant="success"
+      />
+      <MetricCard
+        title="Taxa de Conversão"
+        value={`${metrics.taxaConversao}%`}
+        subtitle="leads → contratos"
+        icon={<Percent className="h-5 w-5" />}
+        isLoading={isLoading}
+        delay={250}
+        variant="success"
       />
     </div>
   );

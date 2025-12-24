@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase, DadosCliente } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Lead } from "@/lib/mockData";
+import { Lead, KANBAN_STATUSES } from "@/lib/mockData";
 import {
   PeriodType,
   DateRange,
@@ -23,6 +23,8 @@ export interface LeadsMetrics {
   peakDaily: { count: number; date: string };
   previousTotalLeads: number;
   percentageChange: number;
+  contratosFechados: number;
+  taxaConversao: number;
 }
 
 export interface DailyVolume {
@@ -61,29 +63,43 @@ export interface UseLeadsDataReturn {
   hourlyDistribution: HourlyDistribution[];
   weekdayDistribution: WeekdayDistribution[];
   sourceDistribution: SourceDistribution[];
+  availableSources: string[];
   period: PeriodType;
   customRange: DateRange | undefined;
   periodInfo: PeriodInfo;
   setPeriod: (period: PeriodType) => void;
   setCustomRange: (range: DateRange) => void;
+  selectedSource: string;
+  setSelectedSource: (source: string) => void;
   isLoading: boolean;
   refetch: () => void;
+  updateLead: (id: string, updates: Partial<Lead>) => Promise<boolean>;
 }
 
 // Converter DadosCliente para Lead
 function convertToLead(data: DadosCliente): Lead {
+  // Tratar fonte vazia
+  const fonte = data.fonte ?? "";
+  const fonteNormalizada = fonte.trim() === "" ? "(Sem fonte)" : fonte;
+
+  // Derivar status do kanban ou contrato_fechado
+  let status = data.kanban ?? "Novo Lead";
+  if (data.contrato_fechado) {
+    status = "Convertido";
+  }
+
   return {
     id: String(data.id),
     nome: String(data.nome ?? ""),
     telefone: String(data.telefone ?? ""),
     email: data.email ? String(data.email) : "",
-
-    // Fonte vem da coluna "fonte" (preferencial) ou "fonte_conversa" (fallback)
-    fonte_conversa: String((data.fonte ?? data.fonte_conversa ?? "")),
-
-    status: String(data.status ?? ""),
+    fonte_conversa: fonteNormalizada,
+    status,
     cidade: data.cidade ? String(data.cidade) : "",
     estado: data.estado ? String(data.estado) : "",
+    kanban: data.kanban ?? "Novo Lead",
+    contrato_fechado: data.contrato_fechado ?? false,
+    data_fechamento: data.data_fechamento ? String(data.data_fechamento) : undefined,
     created_at: String(data.created_at),
   };
 }
@@ -92,6 +108,7 @@ export function useLeadsData(): UseLeadsDataReturn {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [period, setPeriod] = useState<PeriodType>("last30days");
   const [customRange, setCustomRange] = useState<DateRange | undefined>();
+  const [selectedSource, setSelectedSource] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
 
   const periodInfo = useMemo(() => getPeriodDates(period, customRange), [period, customRange]);
@@ -116,8 +133,6 @@ export function useLeadsData(): UseLeadsDataReturn {
         return;
       }
 
-      // IMPORTANTE: não usamos mais dados mock como fallback,
-      // para garantir que os números sempre reflitam o banco.
       if (!data) {
         setLeads([]);
         return;
@@ -147,6 +162,67 @@ export function useLeadsData(): UseLeadsDataReturn {
     }
   }, []);
 
+  // Update lead in Supabase
+  const updateLead = useCallback(async (id: string, updates: Partial<Lead>): Promise<boolean> => {
+    try {
+      const dbUpdates: Record<string, any> = {};
+      
+      if (updates.kanban !== undefined) dbUpdates.kanban = updates.kanban;
+      if (updates.contrato_fechado !== undefined) {
+        dbUpdates.contrato_fechado = updates.contrato_fechado;
+        // Se marcar como fechado, atualizar data_fechamento
+        if (updates.contrato_fechado) {
+          dbUpdates.data_fechamento = new Date().toISOString();
+        } else {
+          dbUpdates.data_fechamento = null;
+        }
+      }
+
+      const { error } = await supabase
+        .from("dados_cliente")
+        .update(dbUpdates)
+        .eq("id", parseInt(id));
+
+      if (error) {
+        console.error("Erro ao atualizar lead:", error);
+        toast({
+          title: "Erro ao atualizar",
+          description: error.message,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Atualizar localmente
+      setLeads(prev => prev.map(lead => {
+        if (lead.id === id) {
+          return { 
+            ...lead, 
+            ...updates,
+            status: updates.contrato_fechado ? "Convertido" : (updates.kanban ?? lead.kanban ?? lead.status),
+            data_fechamento: updates.contrato_fechado ? new Date().toISOString() : (updates.contrato_fechado === false ? undefined : lead.data_fechamento),
+          };
+        }
+        return lead;
+      }));
+
+      toast({
+        title: "Lead atualizado",
+        description: "Alterações salvas com sucesso.",
+      });
+
+      return true;
+    } catch (err) {
+      console.error("Erro ao atualizar lead:", err);
+      toast({
+        title: "Erro ao atualizar",
+        description: "Não foi possível salvar as alterações.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  }, []);
+
   // Initial fetch
   useEffect(() => {
     fetchLeads();
@@ -158,20 +234,39 @@ export function useLeadsData(): UseLeadsDataReturn {
     return () => clearInterval(interval);
   }, [fetchLeads]);
 
+  // Lista de fontes únicas disponíveis
+  const availableSources = useMemo(() => {
+    const sources = new Set(leads.map(l => l.fonte_conversa));
+    return Array.from(sources).sort();
+  }, [leads]);
+
   const filteredLeads = useMemo(() => {
-    return leads.filter((lead) => isDateInRange(lead.created_at, periodInfo.current));
-  }, [leads, periodInfo.current]);
+    let filtered = leads.filter((lead) => isDateInRange(lead.created_at, periodInfo.current));
+    
+    // Filtrar por fonte se não for "all"
+    if (selectedSource !== "all") {
+      filtered = filtered.filter(lead => lead.fonte_conversa === selectedSource);
+    }
+    
+    return filtered;
+  }, [leads, periodInfo.current, selectedSource]);
 
   const previousLeads = useMemo(() => {
-    return leads.filter((lead) => isDateInRange(lead.created_at, periodInfo.previous));
-  }, [leads, periodInfo.previous]);
+    let filtered = leads.filter((lead) => isDateInRange(lead.created_at, periodInfo.previous));
+    
+    if (selectedSource !== "all") {
+      filtered = filtered.filter(lead => lead.fonte_conversa === selectedSource);
+    }
+    
+    return filtered;
+  }, [leads, periodInfo.previous, selectedSource]);
 
   const metrics = useMemo((): LeadsMetrics => {
     const today = new Date();
     const todayStart = new Date(today.setHours(0, 0, 0, 0));
     const todayEnd = new Date(today.setHours(23, 59, 59, 999));
 
-    const leadsToday = leads.filter((lead) =>
+    const leadsToday = filteredLeads.filter((lead) =>
       isDateInRange(lead.created_at, { start: todayStart, end: todayEnd })
     ).length;
 
@@ -192,6 +287,12 @@ export function useLeadsData(): UseLeadsDataReturn {
       ? Math.round(dailyCounts.reduce((a, b) => a + b, 0) / dailyCounts.length)
       : 0;
 
+    // Contratos fechados no período
+    const contratosFechados = filteredLeads.filter(lead => lead.contrato_fechado).length;
+    const taxaConversao = filteredLeads.length > 0 
+      ? Math.round((contratosFechados / filteredLeads.length) * 100)
+      : 0;
+
     return {
       totalLeads: filteredLeads.length,
       leadsToday,
@@ -202,8 +303,10 @@ export function useLeadsData(): UseLeadsDataReturn {
       },
       previousTotalLeads: previousLeads.length,
       percentageChange: calculatePercentageChange(filteredLeads.length, previousLeads.length),
+      contratosFechados,
+      taxaConversao,
     };
-  }, [filteredLeads, previousLeads, leads, periodInfo.current]);
+  }, [filteredLeads, previousLeads, periodInfo.current]);
 
   const dailyVolume = useMemo((): DailyVolume[] => {
     const currentDays = getDaysInRange(periodInfo.current);
@@ -291,7 +394,7 @@ export function useLeadsData(): UseLeadsDataReturn {
     filteredLeads.forEach((lead) => {
       const current = sourceMap.get(lead.fonte_conversa) || { total: 0, converted: 0 };
       current.total++;
-      if (lead.status === "Convertido") current.converted++;
+      if (lead.contrato_fechado || lead.status === "Convertido") current.converted++;
       sourceMap.set(lead.fonte_conversa, current);
     });
 
@@ -315,12 +418,18 @@ export function useLeadsData(): UseLeadsDataReturn {
     hourlyDistribution,
     weekdayDistribution,
     sourceDistribution,
+    availableSources,
     period,
     customRange,
     periodInfo,
     setPeriod,
     setCustomRange,
+    selectedSource,
+    setSelectedSource,
     isLoading,
     refetch: fetchLeads,
+    updateLead,
   };
 }
+
+export { KANBAN_STATUSES };

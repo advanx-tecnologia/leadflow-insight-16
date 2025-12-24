@@ -8,9 +8,24 @@ export interface Lead {
   status: string;
   cidade?: string;
   estado?: string;
+  kanban?: string;
+  contrato_fechado?: boolean;
+  data_fechamento?: string;
 }
 
 export type LeadStatus = "Novo" | "Qualificado" | "Convertido" | "Perdido";
+
+export const KANBAN_STATUSES = [
+  "Novo Lead",
+  "Qualificado", 
+  "Em Negociação",
+  "Proposta Enviada",
+  "Contrato",
+  "Peticionamento",
+  "Audiência",
+  "Vitória",
+  "Loss",
+];
 
 export const LEAD_SOURCES = [
   "WhatsApp",
@@ -79,6 +94,9 @@ function generateMockLeads(count: number = 500): Lead[] {
       telefone: `(${11 + Math.floor(Math.random() * 89)}) 9${Math.floor(Math.random() * 9000) + 1000}-${Math.floor(Math.random() * 9000) + 1000}`,
       fonte_conversa: source,
       status,
+      kanban: KANBAN_STATUSES[Math.floor(Math.random() * KANBAN_STATUSES.length)],
+      contrato_fechado: status === "Convertido",
+      data_fechamento: status === "Convertido" ? createdAt.toISOString() : undefined,
     });
   }
 
