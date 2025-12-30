@@ -26,7 +26,7 @@ export function LeadsTable({ leads, isLoading, onUpdateLead }: LeadsTableProps) 
   const [sortField, setSortField] = useState<keyof Lead>("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
-  const perPage = 10;
+  const [perPage, setPerPage] = useState(50);
 
   const filtered = useMemo(() => {
     return leads.filter((l) =>
@@ -199,26 +199,49 @@ export function LeadsTable({ leads, isLoading, onUpdateLead }: LeadsTableProps) 
       
       <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-3">
         <span className="text-sm text-muted-foreground">{sorted.length} leads encontrados</span>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="icon" 
-            disabled={page === 1} 
-            onClick={() => setPage(page - 1)} 
-            className="border-glass-border h-8 w-8"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm">{page} / {totalPages || 1}</span>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            disabled={page >= totalPages} 
-            onClick={() => setPage(page + 1)} 
-            className="border-glass-border h-8 w-8"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Mostrar:</span>
+            <Select
+              value={String(perPage)}
+              onValueChange={(value) => {
+                setPerPage(Number(value));
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[80px] h-8 text-xs bg-secondary/50 border-glass-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-glass-border">
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+                <SelectItem value="200">200</SelectItem>
+                <SelectItem value="500">500</SelectItem>
+                <SelectItem value="1000">1000</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              disabled={page === 1} 
+              onClick={() => setPage(page - 1)} 
+              className="border-glass-border h-8 w-8"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm">{page} / {totalPages || 1}</span>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              disabled={page >= totalPages} 
+              onClick={() => setPage(page + 1)} 
+              className="border-glass-border h-8 w-8"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -48,12 +48,14 @@ export function HourlyColumnChart({ data, isLoading }: HourlyColumnChartProps) {
               tickLine={false}
               axisLine={false}
               interval={2}
+              tick={{ fill: "hsl(215, 20%, 78%)" }}
             />
             <YAxis
               stroke="hsl(215, 20%, 78%)"
               fontSize={12}
               tickLine={false}
               axisLine={false}
+              tick={{ fill: "hsl(215, 20%, 78%)" }}
             />
             <Tooltip
               contentStyle={{
