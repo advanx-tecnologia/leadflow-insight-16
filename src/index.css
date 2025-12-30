@@ -195,3 +195,12 @@ All colors MUST be HSL.
     }
   }
 }
+
+/* Recharts tooltip global fallback for contrast */
+.recharts-default-tooltip,
+.recharts-tooltip-label,
+.recharts-tooltip-item,
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value {
+  color: hsl(213, 31%, 91%) !important;
+}

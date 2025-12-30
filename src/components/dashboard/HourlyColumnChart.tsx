@@ -62,8 +62,9 @@ export function HourlyColumnChart({ data, isLoading }: HourlyColumnChartProps) {
                 backgroundColor: "hsl(222, 47%, 13%)",
                 border: "1px solid hsl(217, 33%, 25%)",
                 borderRadius: "8px",
-                color: "hsl(213, 31%, 91%)",
               }}
+              itemStyle={{ color: "hsl(213, 31%, 91%)" }}
+              labelStyle={{ color: "hsl(213, 31%, 91%)" }}
               cursor={{ fill: "hsl(217, 33%, 17%)" }}
             />
             <Bar dataKey="count" name="Leads" radius={[4, 4, 0, 0]}>
