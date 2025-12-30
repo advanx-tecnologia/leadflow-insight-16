@@ -44,12 +44,14 @@ export function LeadsLineChart({ data, isLoading }: LeadsLineChartProps) {
               fontSize={12}
               tickLine={false}
               axisLine={false}
+              tick={{ fill: "hsl(215, 20%, 78%)" }}
             />
             <YAxis
               stroke="hsl(215, 20%, 78%)"
               fontSize={12}
               tickLine={false}
               axisLine={false}
+              tick={{ fill: "hsl(215, 20%, 78%)" }}
             />
             <Tooltip
               contentStyle={{

@@ -120,7 +120,8 @@ export function useLeadsData(): UseLeadsDataReturn {
       const { data, error } = await supabase
         .from("dados_cliente")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(2000);
 
       if (error) {
         console.error("Erro ao buscar dados:", error);
