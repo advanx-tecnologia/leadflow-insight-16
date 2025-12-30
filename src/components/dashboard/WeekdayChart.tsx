@@ -61,8 +61,9 @@ export function WeekdayChart({ data, isLoading }: WeekdayChartProps) {
                 backgroundColor: "hsl(222, 47%, 13%)",
                 border: "1px solid hsl(217, 33%, 25%)",
                 borderRadius: "8px",
-                color: "hsl(213, 31%, 91%)",
               }}
+              itemStyle={{ color: "hsl(213, 31%, 91%)" }}
+              labelStyle={{ color: "hsl(213, 31%, 91%)" }}
               formatter={(value: number) => [`${value} leads/dia`, "Média"]}
               cursor={{ fill: "hsl(217, 33%, 17%)" }}
             />

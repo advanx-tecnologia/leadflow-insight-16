@@ -51,24 +51,27 @@ export function PeaksTimeline({ data, isLoading }: PeaksTimelineProps) {
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(217, 33%, 20%)" />
             <XAxis
               dataKey="dateFormatted"
-              stroke="hsl(215, 20%, 65%)"
+              stroke="hsl(215, 20%, 78%)"
               fontSize={12}
               tickLine={false}
               axisLine={false}
+              tick={{ fill: "hsl(215, 20%, 78%)" }}
             />
             <YAxis
-              stroke="hsl(215, 20%, 65%)"
+              stroke="hsl(215, 20%, 78%)"
               fontSize={12}
               tickLine={false}
               axisLine={false}
+              tick={{ fill: "hsl(215, 20%, 78%)" }}
             />
             <Tooltip
               contentStyle={{
                 backgroundColor: "hsl(222, 47%, 13%)",
                 border: "1px solid hsl(217, 33%, 25%)",
                 borderRadius: "8px",
-                color: "hsl(213, 31%, 91%)",
               }}
+              itemStyle={{ color: "hsl(213, 31%, 91%)" }}
+              labelStyle={{ color: "hsl(213, 31%, 91%)" }}
             />
             <Line
               type="monotone"
