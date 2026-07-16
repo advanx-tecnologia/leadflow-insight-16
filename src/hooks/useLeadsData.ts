@@ -113,15 +113,19 @@ export function useLeadsData(): UseLeadsDataReturn {
 
   const periodInfo = useMemo(() => getPeriodDates(period, customRange), [period, customRange]);
 
-  // Fetch data from Supabase
+  // Fetch data from Supabase — só o range necessário (período anterior → atual),
+  // filtrado no servidor para os números não dependerem de um limite fixo de linhas.
   const fetchLeads = useCallback(async () => {
     setIsLoading(true);
     try {
+      const rangeStart = periodInfo.previous.start.toISOString();
+      const rangeEnd = periodInfo.current.end.toISOString();
       const { data, error } = await supabase
         .from("dados_cliente")
         .select("*")
-        .order("created_at", { ascending: false })
-        .limit(2000);
+        .gte("created_at", rangeStart)
+        .lte("created_at", rangeEnd)
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Erro ao buscar dados:", error);
@@ -161,7 +165,7 @@ export function useLeadsData(): UseLeadsDataReturn {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [periodInfo]);
 
   // Update lead in Supabase
   const updateLead = useCallback(async (id: string, updates: Partial<Lead>): Promise<boolean> => {

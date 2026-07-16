@@ -1,5 +1,8 @@
 import { useLeadsData } from "@/hooks/useLeadsData";
+import { useMetas } from "@/hooks/useMetas";
 import { PeriodSelector } from "@/components/dashboard/PeriodSelector";
+import { GoalsDialog } from "@/components/dashboard/GoalsDialog";
+import { GoalsProgress } from "@/components/dashboard/GoalsProgress";
 import { SourceFilter } from "@/components/dashboard/SourceFilter";
 import { MetricsCards } from "@/components/dashboard/MetricsCards";
 import { LeadsLineChart } from "@/components/dashboard/LeadsLineChart";
@@ -33,6 +36,16 @@ const Index = () => {
     updateLead,
   } = useLeadsData();
 
+  const {
+    metaLeads,
+    metaContratos,
+    leadsDoMes,
+    contratosDoMes,
+    mesLabel,
+    isLoading: isLoadingMetas,
+    saveMetas,
+  } = useMetas();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -55,15 +68,23 @@ const Index = () => {
                 </div>
               </div>
               
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={refetch}
-                disabled={isLoading}
-                className="glass-card border-border/50 h-9 w-9 sm:h-10 sm:w-10"
-              >
-                <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-              </Button>
+              <div className="flex items-center gap-2">
+                <GoalsDialog
+                  metaLeads={metaLeads}
+                  metaContratos={metaContratos}
+                  mesLabel={mesLabel}
+                  onSave={saveMetas}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={refetch}
+                  disabled={isLoading}
+                  className="glass-card border-border/50 h-9 w-9 sm:h-10 sm:w-10"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                </Button>
+              </div>
             </div>
 
             {/* Filtros */}
@@ -87,6 +108,16 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        {/* Metas do mês */}
+        <GoalsProgress
+          mesLabel={mesLabel}
+          leadsDoMes={leadsDoMes}
+          contratosDoMes={contratosDoMes}
+          metaLeads={metaLeads}
+          metaContratos={metaContratos}
+          isLoading={isLoadingMetas}
+        />
+
         {/* KPI Cards */}
         <MetricsCards metrics={metrics} isLoading={isLoading} />
 
