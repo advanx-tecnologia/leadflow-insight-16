@@ -95,13 +95,12 @@ export function PeriodSelector({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Popover open={isCustomOpen} onOpenChange={setIsCustomOpen}>
-        <PopoverTrigger asChild>
-          <span />
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-4 bg-card border-glass-border" align="start">
+      <Dialog open={isCustomOpen} onOpenChange={setIsCustomOpen}>
+        <DialogContent className="w-auto max-w-fit bg-card border-glass-border">
+          <DialogHeader>
+            <DialogTitle>Selecione o período</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4">
-            <h4 className="font-medium text-sm">Selecione o período</h4>
             <CalendarComponent
               mode="range"
               selected={{ from: tempRange.from, to: tempRange.to }}
@@ -127,8 +126,8 @@ export function PeriodSelector({
               </Button>
             </div>
           </div>
-        </PopoverContent>
-      </Popover>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
