@@ -52,11 +52,23 @@ export function getPeriodDates(period: PeriodType, customRange?: DateRange): Per
       label = "Últimos 7 dias";
       break;
 
-    case "thisMonth":
-      current = { start: startOfMonth(now), end: endOfDay(now) };
-      previous = { start: startOfMonth(subMonths(now, 1)), end: endOfMonth(subMonths(now, 1)) };
+    case "thisMonth": {
+      const startCurrent = startOfMonth(now);
+      current = { start: startCurrent, end: endOfDay(now) };
+      // Janela equivalente do mês anterior (mesmo nº de dias decorridos)
+      const daysElapsed = differenceInDays(endOfDay(now), startCurrent);
+      const prevMonthStart = startOfMonth(subMonths(now, 1));
+      previous = {
+        start: prevMonthStart,
+        end: endOfDay(subDays(new Date(prevMonthStart.getTime()), 0)),
+      };
+      // Ajusta o fim do período anterior para mesmo nº de dias decorridos
+      const prevEnd = new Date(prevMonthStart);
+      prevEnd.setDate(prevEnd.getDate() + daysElapsed);
+      previous = { start: prevMonthStart, end: endOfDay(prevEnd) };
       label = "Este mês";
       break;
+    }
 
     case "last30days":
       current = { start: startOfDay(subDays(now, 29)), end: endOfDay(now) };
@@ -64,11 +76,18 @@ export function getPeriodDates(period: PeriodType, customRange?: DateRange): Per
       label = "Últimos 30 dias";
       break;
 
-    case "thisYear":
-      current = { start: startOfYear(now), end: endOfDay(now) };
-      previous = { start: startOfYear(subYears(now, 1)), end: endOfYear(subYears(now, 1)) };
+    case "thisYear": {
+      const startCurrent = startOfYear(now);
+      current = { start: startCurrent, end: endOfDay(now) };
+      // Janela equivalente do ano anterior (mesmo nº de dias decorridos)
+      const daysElapsed = differenceInDays(endOfDay(now), startCurrent);
+      const prevYearStart = startOfYear(subYears(now, 1));
+      const prevEnd = new Date(prevYearStart);
+      prevEnd.setDate(prevEnd.getDate() + daysElapsed);
+      previous = { start: prevYearStart, end: endOfDay(prevEnd) };
       label = "Este ano";
       break;
+    }
 
     case "custom":
       if (customRange) {
