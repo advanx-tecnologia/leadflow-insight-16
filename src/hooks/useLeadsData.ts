@@ -263,9 +263,9 @@ export function useLeadsData(): UseLeadsDataReturn {
   }, [leads, periodInfo.previous, selectedSource]);
 
   const metrics = useMemo((): LeadsMetrics => {
-    const today = new Date();
-    const todayStart = new Date(today.setHours(0, 0, 0, 0));
-    const todayEnd = new Date(today.setHours(23, 59, 59, 999));
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
     const leadsToday = filteredLeads.filter((lead) =>
       isDateInRange(lead.created_at, { start: todayStart, end: todayEnd })
@@ -273,8 +273,10 @@ export function useLeadsData(): UseLeadsDataReturn {
 
     const days = getDaysInRange(periodInfo.current);
     const dailyCounts = days.map((day) => {
-      const dayStart = new Date(day.setHours(0, 0, 0, 0));
-      const dayEnd = new Date(day.setHours(23, 59, 59, 999));
+      const dayStart = new Date(day);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(day);
+      dayEnd.setHours(23, 59, 59, 999);
       return filteredLeads.filter((lead) =>
         isDateInRange(lead.created_at, { start: dayStart, end: dayEnd })
       ).length;
@@ -312,8 +314,12 @@ export function useLeadsData(): UseLeadsDataReturn {
   const dailyVolume = useMemo((): DailyVolume[] => {
     const currentDays = getDaysInRange(periodInfo.current);
     const previousDays = getDaysInRange(periodInfo.previous);
+    // Alinha pelos ÚLTIMOS N dias de cada janela, para comparar equivalentes
+    const n = Math.min(currentDays.length, previousDays.length);
+    const currentTail = currentDays.slice(currentDays.length - n);
+    const previousTail = previousDays.slice(previousDays.length - n);
 
-    return currentDays.map((day, index) => {
+    return currentTail.map((day, index) => {
       const dayStart = new Date(day);
       dayStart.setHours(0, 0, 0, 0);
       const dayEnd = new Date(day);
@@ -324,10 +330,11 @@ export function useLeadsData(): UseLeadsDataReturn {
       ).length;
 
       let previousCount = 0;
-      if (previousDays[index]) {
-        const prevDayStart = new Date(previousDays[index]);
+      const prevDay = previousTail[index];
+      if (prevDay) {
+        const prevDayStart = new Date(prevDay);
         prevDayStart.setHours(0, 0, 0, 0);
-        const prevDayEnd = new Date(previousDays[index]);
+        const prevDayEnd = new Date(prevDay);
         prevDayEnd.setHours(23, 59, 59, 999);
         previousCount = previousLeads.filter((lead) =>
           isDateInRange(lead.created_at, { start: prevDayStart, end: prevDayEnd })
