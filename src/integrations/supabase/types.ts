@@ -275,6 +275,165 @@ export type Database = {
           },
         ]
       }
+      dados_cliente_meAjuda: {
+        Row: {
+          anuncio: string | null
+          bairro: string | null
+          bot: string | null
+          campanha: string | null
+          cep: string | null
+          cidade: string | null
+          complemento: string | null
+          conjunto: string | null
+          contrato_assinado: boolean | null
+          contrato_fechado: boolean | null
+          cpf: string | null
+          cpf_validado: boolean | null
+          created_at: string | null
+          data_audiencia: string | null
+          data_fechamento: string | null
+          data_nascimento: string | null
+          email: string | null
+          endereco: string | null
+          estado: string | null
+          follow_up: boolean | null
+          fonte: string | null
+          id: number
+          kanban: string | null
+          logradouro: string | null
+          nicho: string | null
+          nome: string | null
+          numero: string | null
+          numero_processo: string | null
+          numero_protocolo: string | null
+          observacoes: string | null
+          pipeline_tipo: string | null
+          previsao_honorarios: number | null
+          previsao_recebimento: string | null
+          procedencia: string | null
+          profissao: string | null
+          responsavel_id: string | null
+          rg: string | null
+          status_pagamento: string | null
+          telefone: string | null
+          telefone_chat: string | null
+          tese: string | null
+          ticket_valor: number | null
+          updated_at: string | null
+          user_id: string | null
+          valor_estimado_causa: number | null
+        }
+        Insert: {
+          anuncio?: string | null
+          bairro?: string | null
+          bot?: string | null
+          campanha?: string | null
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          conjunto?: string | null
+          contrato_assinado?: boolean | null
+          contrato_fechado?: boolean | null
+          cpf?: string | null
+          cpf_validado?: boolean | null
+          created_at?: string | null
+          data_audiencia?: string | null
+          data_fechamento?: string | null
+          data_nascimento?: string | null
+          email?: string | null
+          endereco?: string | null
+          estado?: string | null
+          follow_up?: boolean | null
+          fonte?: string | null
+          id?: number
+          kanban?: string | null
+          logradouro?: string | null
+          nicho?: string | null
+          nome?: string | null
+          numero?: string | null
+          numero_processo?: string | null
+          numero_protocolo?: string | null
+          observacoes?: string | null
+          pipeline_tipo?: string | null
+          previsao_honorarios?: number | null
+          previsao_recebimento?: string | null
+          procedencia?: string | null
+          profissao?: string | null
+          responsavel_id?: string | null
+          rg?: string | null
+          status_pagamento?: string | null
+          telefone?: string | null
+          telefone_chat?: string | null
+          tese?: string | null
+          ticket_valor?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          valor_estimado_causa?: number | null
+        }
+        Update: {
+          anuncio?: string | null
+          bairro?: string | null
+          bot?: string | null
+          campanha?: string | null
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          conjunto?: string | null
+          contrato_assinado?: boolean | null
+          contrato_fechado?: boolean | null
+          cpf?: string | null
+          cpf_validado?: boolean | null
+          created_at?: string | null
+          data_audiencia?: string | null
+          data_fechamento?: string | null
+          data_nascimento?: string | null
+          email?: string | null
+          endereco?: string | null
+          estado?: string | null
+          follow_up?: boolean | null
+          fonte?: string | null
+          id?: number
+          kanban?: string | null
+          logradouro?: string | null
+          nicho?: string | null
+          nome?: string | null
+          numero?: string | null
+          numero_processo?: string | null
+          numero_protocolo?: string | null
+          observacoes?: string | null
+          pipeline_tipo?: string | null
+          previsao_honorarios?: number | null
+          previsao_recebimento?: string | null
+          procedencia?: string | null
+          profissao?: string | null
+          responsavel_id?: string | null
+          rg?: string | null
+          status_pagamento?: string | null
+          telefone?: string | null
+          telefone_chat?: string | null
+          tese?: string | null
+          ticket_valor?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          valor_estimado_causa?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dados_cliente_meAjuda_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dados_cliente_meAjuda_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           content: string | null
