@@ -3,10 +3,11 @@ import { Calendar, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +16,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { PeriodType, DateRange } from "@/lib/dateUtils";
-import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 interface PeriodSelectorProps {
@@ -95,13 +95,12 @@ export function PeriodSelector({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Popover open={isCustomOpen} onOpenChange={setIsCustomOpen}>
-        <PopoverTrigger asChild>
-          <span />
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-4 bg-card border-glass-border" align="start">
+      <Dialog open={isCustomOpen} onOpenChange={setIsCustomOpen}>
+        <DialogContent className="w-auto max-w-fit bg-card border-glass-border">
+          <DialogHeader>
+            <DialogTitle>Selecione o período</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4">
-            <h4 className="font-medium text-sm">Selecione o período</h4>
             <CalendarComponent
               mode="range"
               selected={{ from: tempRange.from, to: tempRange.to }}
@@ -127,8 +126,8 @@ export function PeriodSelector({
               </Button>
             </div>
           </div>
-        </PopoverContent>
-      </Popover>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
