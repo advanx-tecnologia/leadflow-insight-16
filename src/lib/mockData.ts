@@ -11,6 +11,7 @@ export interface Lead {
   kanban?: string;
   contrato_fechado?: boolean;
   data_fechamento?: string;
+  creativo_url?: string; // presente = lead veio de anúncio (CTWA); ausente = orgânico
 }
 
 export type LeadStatus = "Novo" | "Qualificado" | "Convertido" | "Perdido";
