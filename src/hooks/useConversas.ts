@@ -21,6 +21,9 @@ export type LeadInfo = {
   fonte: string | null;
   qualificado: string | null;
   motivo_desqualificacao: string | null;
+  analise_categoria: string | null;
+  analise_resumo: string | null;
+  analisado_ia_em: string | null;
 };
 
 export type Conversa = {
@@ -32,6 +35,7 @@ export type Conversa = {
   lead?: LeadInfo;
 };
 
+// Só dígitos, ignora DDI/9 extra comparando os últimos 8 (núcleo do número).
 const digits = (s?: string | null) => (s ?? "").replace(/\D/g, "");
 const core = (s?: string | null) => digits(s).slice(-8);
 
@@ -44,6 +48,7 @@ async function fetchConversas(): Promise<Conversa[]> {
 
   const rows = (msgs ?? []) as ChatMessage[];
 
+  // Agrupa por telefone.
   const grupos = new Map<string, Conversa>();
   for (const m of rows) {
     const phone = m.phone ?? "sem-telefone";
@@ -65,12 +70,13 @@ async function fetchConversas(): Promise<Conversa[]> {
 
   const conversas = Array.from(grupos.values());
 
+  // Liga cada conversa ao lead correspondente (nome + imagem do criativo).
   const cores = conversas.map((c) => core(c.phone)).filter(Boolean);
   if (cores.length) {
     const { data: leads } = await supabase
       .from("dados_cliente")
       .select(
-        "id,nome,telefone,creativo_url,creativo_nome,fonte,qualificado,motivo_desqualificacao",
+        "id,nome,telefone,creativo_url,creativo_nome,fonte,qualificado,motivo_desqualificacao,analise_categoria,analise_resumo,analisado_ia_em",
       )
       .or(cores.map((c) => `telefone.ilike.%${c}%`).join(","));
     const byCore = new Map<string, LeadInfo>();
@@ -87,6 +93,7 @@ async function fetchConversas(): Promise<Conversa[]> {
     }
   }
 
+  // Mais recente primeiro.
   return conversas.sort((a, b) =>
     (b.ultimaData ?? "").localeCompare(a.ultimaData ?? ""),
   );
@@ -96,6 +103,8 @@ export function useConversas() {
   return useQuery({
     queryKey: ["conversas"],
     queryFn: fetchConversas,
+    // Atualização manual (botão) — sem polling. Não desgasta o banco.
+    // ponytail: sem refetchInterval; se quiser 1x/dia, cron externo invalida a query.
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   });
