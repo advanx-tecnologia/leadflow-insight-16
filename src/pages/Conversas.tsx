@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Search, MessageSquare, ImageOff, RefreshCw } from "lucide-react";
+import { ArrowLeft, Search, MessageSquare, ImageOff, RefreshCw, Sparkles } from "lucide-react";
 import { useConversas, type Conversa } from "@/hooks/useConversas";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,20 @@ export default function Conversas() {
   const { data: conversas = [], isLoading, isFetching, error, refetch } = useConversas();
   const [busca, setBusca] = useState("");
   const [sel, setSel] = useState<string | null>(null);
+  const [analisando, setAnalisando] = useState(false);
+
+  async function analisarIA() {
+    setAnalisando(true);
+    try {
+      const { error: e } = await supabase.functions.invoke("analisa-conversas");
+      if (e) throw e;
+      await refetch();
+    } catch (err) {
+      alert("Falha ao analisar: " + (err as Error).message);
+    } finally {
+      setAnalisando(false);
+    }
+  }
 
   const filtradas = useMemo(() => {
     const q = busca.toLowerCase().trim();
@@ -63,6 +78,14 @@ export default function Conversas() {
         >
           <RefreshCw className={cn("h-4 w-4 mr-1", isFetching && "animate-spin")} />
           Atualizar
+        </Button>
+        <Button
+          size="sm"
+          onClick={analisarIA}
+          disabled={analisando}
+        >
+          <Sparkles className={cn("h-4 w-4 mr-1", analisando && "animate-pulse")} />
+          {analisando ? "Analisando..." : "Analisar com IA"}
         </Button>
       </header>
 
@@ -152,6 +175,25 @@ export default function Conversas() {
                     <p className="text-sm text-destructive mt-2">
                       Motivo: {atual.lead.motivo_desqualificacao}
                     </p>
+                  )}
+                  {atual.lead?.analise_resumo && (
+                    <div className="mt-3 p-3 rounded-lg bg-muted/50 border">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Sparkles className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-xs font-semibold">Relatório IA</span>
+                        {atual.lead.analise_categoria && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            {atual.lead.analise_categoria}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm">{atual.lead.analise_resumo}</p>
+                      {atual.lead.analisado_ia_em && (
+                        <span className="text-[10px] text-muted-foreground">
+                          analisado em {fmt(atual.lead.analisado_ia_em)}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
