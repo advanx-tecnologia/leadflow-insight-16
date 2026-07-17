@@ -5,6 +5,7 @@ import { GoalsDialog } from "@/components/dashboard/GoalsDialog";
 import { GoalsProgress } from "@/components/dashboard/GoalsProgress";
 import { SourceFilter } from "@/components/dashboard/SourceFilter";
 import { MetricsCards } from "@/components/dashboard/MetricsCards";
+import { AdOrganicSplit } from "@/components/dashboard/AdOrganicSplit";
 import { LeadsLineChart } from "@/components/dashboard/LeadsLineChart";
 import { HourlyColumnChart } from "@/components/dashboard/HourlyColumnChart";
 import { WeekdayChart } from "@/components/dashboard/WeekdayChart";
@@ -12,7 +13,8 @@ import { SourceDistributionChart } from "@/components/dashboard/SourceDistributi
 import { SourceAnalysis } from "@/components/dashboard/SourceAnalysis";
 import { PeaksTimeline } from "@/components/dashboard/PeaksTimeline";
 import { LeadsTable } from "@/components/dashboard/LeadsTable";
-import { RefreshCw, TrendingUp } from "lucide-react";
+import { RefreshCw, TrendingUp, MessageSquare } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
@@ -63,12 +65,23 @@ const Index = () => {
                     Dashboard de Leads
                   </h1>
                   <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-                    Análise em tempo real • Atualização automática a cada 30s
+                    Análise em tempo real • Atualização manual
                   </p>
                 </div>
               </div>
               
               <div className="flex items-center gap-2">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="glass-card border-border/50"
+                >
+                  <Link to="/conversas">
+                    <MessageSquare className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Conversas</span>
+                  </Link>
+                </Button>
                 <GoalsDialog
                   metaLeads={metaLeads}
                   metaContratos={metaContratos}
@@ -120,6 +133,9 @@ const Index = () => {
 
         {/* KPI Cards */}
         <MetricsCards metrics={metrics} isLoading={isLoading} />
+
+        {/* Métrica diferenciada: anúncio vs orgânico */}
+        <AdOrganicSplit metrics={metrics} isLoading={isLoading} />
 
         {/* Charts Grid - Row 1 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">

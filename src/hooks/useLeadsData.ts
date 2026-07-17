@@ -25,6 +25,13 @@ export interface LeadsMetrics {
   percentageChange: number;
   contratosFechados: number;
   taxaConversao: number;
+  // Split anúncio (creativo_url presente) vs orgânico (ausente)
+  leadsAd: number;
+  leadsOrganic: number;
+  contratosAd: number;
+  contratosOrganic: number;
+  taxaConversaoAd: number;
+  taxaConversaoOrganic: number;
 }
 
 export interface DailyVolume {
@@ -101,6 +108,7 @@ function convertToLead(data: DadosCliente): Lead {
     contrato_fechado: data.contrato_fechado ?? false,
     data_fechamento: data.data_fechamento ? String(data.data_fechamento) : undefined,
     created_at: String(data.created_at),
+    creativo_url: data.creativo_url ? String(data.creativo_url) : undefined,
   };
 }
 
@@ -233,11 +241,7 @@ export function useLeadsData(): UseLeadsDataReturn {
     fetchLeads();
   }, [fetchLeads]);
 
-  // Auto-refresh every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(fetchLeads, 30000);
-    return () => clearInterval(interval);
-  }, [fetchLeads]);
+  // Atualização manual (botão refresh). Sem polling — ver subtítulo do Dashboard.
 
   // Lista de fontes únicas disponíveis
   const availableSources = useMemo(() => {
@@ -296,9 +300,15 @@ export function useLeadsData(): UseLeadsDataReturn {
 
     // Contratos fechados no período
     const contratosFechados = filteredLeads.filter(lead => lead.contrato_fechado).length;
-    const taxaConversao = filteredLeads.length > 0 
+    const taxaConversao = filteredLeads.length > 0
       ? Math.round((contratosFechados / filteredLeads.length) * 100)
       : 0;
+
+    // Split anúncio (creativo_url presente = ad CTWA) vs orgânico
+    const adLeads = filteredLeads.filter(l => !!l.creativo_url);
+    const organicLeads = filteredLeads.filter(l => !l.creativo_url);
+    const contratosAd = adLeads.filter(l => l.contrato_fechado).length;
+    const contratosOrganic = organicLeads.filter(l => l.contrato_fechado).length;
 
     return {
       totalLeads: filteredLeads.length,
@@ -312,6 +322,12 @@ export function useLeadsData(): UseLeadsDataReturn {
       percentageChange: calculatePercentageChange(filteredLeads.length, previousLeads.length),
       contratosFechados,
       taxaConversao,
+      leadsAd: adLeads.length,
+      leadsOrganic: organicLeads.length,
+      contratosAd,
+      contratosOrganic,
+      taxaConversaoAd: adLeads.length > 0 ? Math.round((contratosAd / adLeads.length) * 100) : 0,
+      taxaConversaoOrganic: organicLeads.length > 0 ? Math.round((contratosOrganic / organicLeads.length) * 100) : 0,
     };
   }, [filteredLeads, previousLeads, periodInfo.current]);
 
